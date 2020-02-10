@@ -108,12 +108,17 @@ namespace modules {
     }
 
     if (m_remove_unmounted) {
-      for (auto&& mount : m_mounts) {
+      for (auto it = m_mounts.begin(); it != m_mounts.end(); /*don't it++*/) {
+        auto&& mount = *it;
         if (!mount->mounted) {
           m_log.info("%s: Removing mountpoint \"%s\" (reason: `remove-unmounted = true`)", name(), mount->mountpoint);
           m_mountpoints.erase(
               std::remove(m_mountpoints.begin(), m_mountpoints.end(), mount->mountpoint), m_mountpoints.end());
-          m_mounts.erase(std::remove(m_mounts.begin(), m_mounts.end(), mount), m_mounts.end());
+          // deleting while looping causes iterator to be broken
+          it = m_mounts.erase(it);
+        }
+        else {
+            ++it;
         }
       }
     }
